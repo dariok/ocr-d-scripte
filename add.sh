@@ -1,16 +1,20 @@
 #!/bin/bash
 
-ocrd workspace init .
-ocrd workspace set-id "ocrd:t001"
+rm -r $1/OCR-D-*
+rm $1/mets.xml
 
-NUM=$(find . -name "*.tif" | wc -l)
+ocrd workspace init $1
+ocrd workspace -d $1 set-id "ocrd:t001"
+
+NUM=$(find $1 -name "*.tif" | wc -l)
 for n in $(eval echo "{01..$NUM}");
 do
 	echo "${n} of ${NUM}"
-	ocrd workspace add -G OCR-D-IMG -i OCR-D-IMG_00${n} -m image/tiff -g dat-19140103-${n} 19140103_000${n}.tif
+	ocrd workspace -d $1 add -G OCR-D-IMG -i OCR-D-IMG_00${n} -m image/tiff -g dat-${1}-${n} ${1}/${1}_000${n}.tif
 done;
 
-ocrd process \
+
+ocrd process -m $1/mets.xml\
   'cis-ocropy-binarize -I OCR-D-IMG -O OCR-D-SEG-PAGE' \
   'tesserocr-segment-region -I OCR-D-SEG-PAGE -O OCR-D-SEG-BLOCK' \
   'tesserocr-segment-line -I OCR-D-SEG-BLOCK -O OCR-D-SEG-LINE' \
